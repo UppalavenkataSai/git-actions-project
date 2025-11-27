@@ -4,15 +4,24 @@ const port = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
   res.json({
-    status: "ok",
-    message: "Hello from GitHub Actions CI/CD pipeline"
+    service: "github-actions-ci-cd-demo",
+    status: "healthy",
+    environment: process.env.NODE_ENV || "dev",
+    timestamp: new Date().toISOString()
   });
 });
 
-// Only start the server if this file is run directly
+app.get("/api/info", (req, res) => {
+  res.json({
+    version: "1.0.0",
+    maintainer: "DevOps Team",
+    pipeline: "GitHub Actions"
+  });
+});
+
 if (require.main === module) {
   app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+    console.log(`Server running on port ${port}`);
   });
 }
 
