@@ -1,0 +1,22 @@
+{
+  "family": "github-actions-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::009933301789:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::009933301789:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "app",
+      "image": "123456789012.dkr.ecr.ap-south-1.amazonaws.com/github-actions-ecs-demo:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ]
+    }
+  ]
+}
