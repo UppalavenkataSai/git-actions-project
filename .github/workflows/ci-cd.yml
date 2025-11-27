@@ -16,22 +16,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ===== Source =====
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # === CI ===
+      # ===== Runtime =====
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
-      - name: Install dependencies
-        run: npm ci
+      # ===== Dependency Layer =====
+      - name: Clean install dependencies
+        run: |
+          rm -rf node_modules
+          npm ci
 
-      - name: Run tests
+      # ===== Debug Layer (proves what CI is running) =====
+      - name: Debug – print working directory
+        run: pwd
+
+      - name: Debug – print test file
+        run: |
+          echo "===== CI TEST FILE CONTENT ====="
+          cat app.test.js
+
+      - name: Debug – list test files
+        run: find . -name "*test.js"
+
+      # ===== Test Layer =====
+      - name: Run unit tests
         run: npm test
 
-      # === AWS Auth ===
+      # ===== AWS Auth =====
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -39,12 +57,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # === ECR Login ===
+      # ===== ECR =====
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # === Build + Push Image ===
+      # ===== Build & Push =====
       - name: Build, tag, and push image
         id: build-image
         env:
@@ -55,7 +73,7 @@ jobs:
           docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      # === Render ECS task definition ===
+      # ===== ECS Render =====
       - name: Render ECS task definition
         id: render-task
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -64,7 +82,7 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
 
-      # === Deploy to ECS ===
+      # ===== ECS Deploy =====
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
@@ -72,4 +90,3 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-
