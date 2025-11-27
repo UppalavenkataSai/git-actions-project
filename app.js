@@ -6,24 +6,27 @@ const port = process.env.PORT || 3000;
 app.get("/", (req, res) => {
   res.json({
     service: "github-actions-ci-cd-demo",
-    status: "healthy",
-    environment: process.env.NODE_ENV || "dev",
+    status: "v2-active",
+    environment: process.env.NODE_ENV || "prod",
+    version: "2.0.0",
+    deployedBy: "github-actions",
     timestamp: new Date().toISOString()
   });
 });
 
 app.get("/api/info", (req, res) => {
   res.json({
-    version: "1.0.0",
+    version: "2.0.0",
     maintainer: "DevOps Team",
-    pipeline: "GitHub Actions"
+    pipeline: "GitHub Actions",
+    build: "CI/CD Enabled"
   });
 });
 
-// ✅ Export the real express app (not a function)
+// Export the real express app
 module.exports = app;
 
-// ✅ Only start server if file run directly
+// Start server only if run directly
 if (require.main === module) {
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
