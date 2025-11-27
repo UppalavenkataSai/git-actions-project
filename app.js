@@ -1,29 +1,25 @@
-const express = require("express");
-const app = express();
-const port = process.env.PORT || 3000;
+const request = require("supertest");
+const app = require("./app");
 
-app.get("/", (req, res) => {
-  res.json({
-    service: "github-actions-ci-cd-demo",
-    status: "healthy",
-    environment: process.env.NODE_ENV || "dev",
-    timestamp: new Date().toISOString()
+describe("GET /", () => {
+  it("returns correct health payload", async () => {
+    const res = await request(app).get("/");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.service).toBe("github-actions-ci-cd-demo");
+    expect(res.body.status).toBe("healthy");
+    expect(res.body.environment).toBeDefined();
+    expect(res.body.timestamp).toBeDefined();
   });
 });
 
-app.get("/api/info", (req, res) => {
-  res.json({
-    version: "1.0.0",
-    maintainer: "DevOps Team",
-    pipeline: "GitHub Actions"
+describe("GET /api/info", () => {
+  it("returns pipeline info", async () => {
+    const res = await request(app).get("/api/info");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.version).toBe("1.0.0");
+    expect(res.body.pipeline).toBe("GitHub Actions");
   });
 });
-
-if (require.main === module) {
-  app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-  });
-}
-
-module.exports = app;
 
